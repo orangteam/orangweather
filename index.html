@@ -1,219 +1,451 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fancy Weather</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Modern Weather Dashboard</title>
 <style>
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: white;
-    transition: background 1s ease;
-    background-size: cover;
-    background-attachment: fixed;
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+  /* Basic reset */
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    transition: background 2s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
   }
 
-  body.day {
-    background: linear-gradient(to bottom, #87ceeb, #f0f8ff);
+  /* Animated gradient backgrounds for different times */
+  body.morning {
+    background: linear-gradient(135deg, #FFD194, #70e1f5);
+  }
+  body.afternoon {
+    background: linear-gradient(135deg, #2980b9, #6dd5fa);
+  }
+  body.evening {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   }
   body.night {
-    background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
-  }
-  body.sunrise {
-    background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
-  }
-  body.sunset {
-    background: linear-gradient(to bottom, #ff7e5f, #feb47b);
+    background: linear-gradient(135deg, #232526, #1c1c1c);
   }
 
-  .search-box {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
+  /* Fade in animation */
+  .fade-in {
+    animation: fadeIn 1.8s ease forwards;
   }
-  .search-box input {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    font-size: 16px;
-  }
-  .search-box button {
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: none;
-    background: rgba(255, 255, 255, 0.3);
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
+  @keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
   }
 
-  .current-weather {
+  /* Container for greeting and input */
+  #greeting-container {
     text-align: center;
-    margin-top: 10px;
-  }
-  .current-temp {
-    font-size: 80px;
-    font-weight: 300;
-  }
-  .current-condition {
-    font-size: 22px;
-    opacity: 0.9;
-  }
-  .current-icon {
-    width: 120px;
-  }
-
-  .details {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-top: 15px;
-    background: rgba(255,255,255,0.15);
-    padding: 10px 20px;
-    border-radius: 20px;
+    padding: 2rem;
+    max-width: 350px;
+    background: rgba(255 255 255 / 0.1);
+    border-radius: 16px;
     backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.15);
   }
-  .detail {
-    text-align: center;
-    font-size: 14px;
+  #greeting-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
   }
-  .detail-value {
-    font-size: 18px;
-    font-weight: bold;
+  #greeting-container label {
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  #city-input {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 12px;
+    outline: none;
+    box-shadow: inset 0 0 8px rgba(255 255 255 / 0.3);
+    background: rgba(255 255 255 / 0.2);
+    color: #fff;
+    transition: background 0.3s ease;
+  }
+  #city-input::placeholder {
+    color: #ddd;
+  }
+  #city-input:focus {
+    background: rgba(255 255 255 / 0.35);
+  }
+  #submit-btn {
+    margin-top: 1rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    background: #0078d7;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #submit-btn:hover {
+    background: #005fa3;
   }
 
-  .forecast {
-    margin-top: 30px;
+  /* Dashboard styles */
+  #dashboard {
+    max-width: 900px;
+    width: 90vw;
+    margin: 2rem auto 4rem;
+    display: none;
+    flex-direction: column;
+    gap: 1.8rem;
+  }
+
+  #location-header {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #f0f0f0;
+  }
+
+  /* Glassmorphism card */
+  .card {
+    background: rgba(255 255 255 / 0.12);
+    border-radius: 20px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.15);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255 255 255 / 0.15);
+    color: #eee;
+  }
+
+  /* Current weather */
+  #current-weather {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    justify-content: center;
+  }
+  #current-weather img {
+    width: 96px;
+    height: 96px;
+  }
+  #current-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+  }
+  #current-details span {
+    font-weight: 600;
+  }
+
+  /* Radar image */
+  #radar-image {
+    width: 100%;
+    max-height: 360px;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.3);
+  }
+
+  /* Forecast horizontal scroll containers */
+  .forecast-row {
     display: flex;
     overflow-x: auto;
-    gap: 15px;
-    padding: 10px;
-    scrollbar-width: none;
+    padding-bottom: 0.5rem;
+    gap: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255 255 255 / 0.3) transparent;
   }
-  .forecast::-webkit-scrollbar {
-    display: none;
+  .forecast-row::-webkit-scrollbar {
+    height: 8px;
   }
-  .day-card {
-    flex: 0 0 auto;
-    background: rgba(255,255,255,0.15);
-    border-radius: 15px;
-    padding: 10px;
-    text-align: center;
-    backdrop-filter: blur(8px);
-    min-width: 90px;
+  .forecast-row::-webkit-scrollbar-track {
+    background: transparent;
   }
-  .day-card img {
-    width: 50px;
-  }
-  .day-name {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  .day-temp {
-    font-size: 16px;
+  .forecast-row::-webkit-scrollbar-thumb {
+    background-color: rgba(255 255 255 / 0.3);
+    border-radius: 4px;
   }
 
-  .error {
-    color: yellow;
-    margin-top: 5px;
+  /* Hourly & daily forecast cards */
+  .hourly-card, .daily-card {
+    min-width: 90px;
+    background: rgba(255 255 255 / 0.15);
+    border-radius: 16px;
+    padding: 1rem 0.7rem;
+    text-align: center;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.15);
+    transition: background 0.3s ease;
+  }
+  .hourly-card:hover, .daily-card:hover {
+    background: rgba(255 255 255 / 0.3);
+  }
+  .hourly-card img, .daily-card img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0.25rem;
+  }
+  .hourly-time {
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .daily-day {
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .temp-high {
+    color: #ff7e5f;
+    font-weight: 700;
+  }
+  .temp-low {
+    color: #74b9ff;
+  }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    #current-weather {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    #dashboard {
+      width: 95vw;
+    }
   }
 </style>
 </head>
-<body class="day">
-  <div class="search-box">
-    <input type="text" id="zipInput" placeholder="Enter ZIP code">
-    <button id="searchBtn">Get Weather</button>
-  </div>
-  <div id="error" class="error"></div>
+<body>
 
-  <div class="current-weather">
-    <img id="currentIcon" class="current-icon" src="" alt="">
-    <div id="currentTemp" class="current-temp"></div>
-    <div id="currentCondition" class="current-condition"></div>
-  </div>
+<!-- Greeting and city input -->
+<div id="greeting-container" class="fade-in">
+  <h1>Hello!</h1>
+  <label for="city-input">What's your city name?</label>
+  <input type="text" id="city-input" placeholder="e.g. New York" autocomplete="off" />
+  <button id="submit-btn">Get Weather</button>
+  <p id="error-msg" style="color:#f88; margin-top: 0.8rem; display:none;"></p>
+</div>
 
-  <div class="details">
-    <div class="detail">
-      <div>Feels Like</div>
-      <div id="feelsLike" class="detail-value"></div>
-    </div>
-    <div class="detail">
-      <div>Wind</div>
-      <div id="wind" class="detail-value"></div>
-    </div>
-    <div class="detail">
-      <div>Humidity</div>
-      <div id="humidity" class="detail-value"></div>
+<!-- Weather dashboard -->
+<div id="dashboard">
+  <div id="location-header"></div>
+
+  <div id="current-weather" class="card">
+    <img src="" alt="Weather Icon" id="current-icon" />
+    <div id="current-details">
+      <span id="temp"></span>
+      <span id="condition"></span>
+      <span>Feels like: <span id="feels-like"></span></span>
+      <span>Wind: <span id="wind"></span></span>
+      <span>Humidity: <span id="humidity"></span></span>
     </div>
   </div>
 
-  <div class="forecast" id="forecast"></div>
+  <img id="radar-image" alt="Radar Snapshot" />
 
-  <script>
-    const apiKey = "1641bc3200a14ddfa8645938250908 "; // Replace with WeatherAPI key
-    const searchBtn = document.getElementById("searchBtn");
-    const zipInput = document.getElementById("zipInput");
-    const errorDiv = document.getElementById("error");
+  <div>
+    <h2>Hourly Forecast</h2>
+    <div id="hourly-forecast" class="forecast-row"></div>
+  </div>
 
-    searchBtn.addEventListener("click", () => {
-      const zip = zipInput.value.trim();
-      if (!zip) {
-        errorDiv.textContent = "Please enter a ZIP code.";
-        return;
-      }
-      fetchWeather(zip);
+  <div>
+    <h2>10-Day Forecast</h2>
+    <div id="daily-forecast" class="forecast-row"></div>
+  </div>
+</div>
+
+<script>
+  const apiKey = "YOUR_WEATHERAPI_KEY_HERE";
+  const greetingContainer = document.getElementById('greeting-container');
+  const dashboard = document.getElementById('dashboard');
+  const submitBtn = document.getElementById('submit-btn');
+  const cityInput = document.getElementById('city-input');
+  const errorMsg = document.getElementById('error-msg');
+
+  const locationHeader = document.getElementById('location-header');
+  const currentIcon = document.getElementById('current-icon');
+  const tempSpan = document.getElementById('temp');
+  const conditionSpan = document.getElementById('condition');
+  const feelsLikeSpan = document.getElementById('feels-like');
+  const windSpan = document.getElementById('wind');
+  const humiditySpan = document.getElementById('humidity');
+  const radarImage = document.getElementById('radar-image');
+  const hourlyForecast = document.getElementById('hourly-forecast');
+  const dailyForecast = document.getElementById('daily-forecast');
+
+  // Determine time of day for background
+  function setBackgroundByTime(hour) {
+    if (hour >= 5 && hour < 12) {
+      document.body.className = 'morning';
+    } else if (hour >= 12 && hour < 17) {
+      document.body.className = 'afternoon';
+    } else if (hour >= 17 && hour < 20) {
+      document.body.className = 'evening';
+    } else {
+      document.body.className = 'night';
+    }
+  }
+
+  // Format hour to 12h format with am/pm
+  function formatHour(hour24) {
+    let ampm = hour24 >= 12 ? 'pm' : 'am';
+    let hour12 = hour24 % 12;
+    if (hour12 === 0) hour12 = 12;
+    return hour12 + ampm;
+  }
+
+  // Format date for daily forecast - weekday short
+  function formatWeekday(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { weekday: 'short' });
+  }
+
+  // Build radar static snapshot URL
+  // Using NOAA radar tiles snapshot example for fixed zoom, center on lat/lon
+  // Esri radar imagery via ArcGIS REST API or NOAA Radar static snapshots are tricky,
+  // so here’s a simple Esri example:
+  // We'll use Esri's National Weather Radar Basemap as a static image from their ArcGIS service:
+  // URL example:
+  // https://sampleserver6.arcgisonline.com/arcgis/rest/services/NationalWeatherRadar/MapServer/export?bbox=...&size=600,400&format=png32
+
+  // We'll build a bbox of 0.5 deg around city lat/lon (roughly 50km)
+  function getRadarSnapshotUrl(lat, lon, width = 600, height = 400) {
+    const halfDeg = 0.5;
+    const xmin = lon - halfDeg;
+    const ymin = lat - halfDeg;
+    const xmax = lon + halfDeg;
+    const ymax = lat + halfDeg;
+
+    const bbox = `${xmin},${ymin},${xmax},${ymax}`;
+    // Using Esri sample server for radar
+    // This is a publicly available ArcGIS MapServer for radar imagery
+    // Note: Sometimes public sample servers may be unstable; for production use find a reliable radar tile source
+
+    const baseUrl = "https://sampleserver6.arcgisonline.com/arcgis/rest/services/NationalWeatherRadar/MapServer/export";
+    const params = new URLSearchParams({
+      bbox,
+      bboxSR: 4326,
+      imageSR: 4326,
+      size: `${width},${height}`,
+      format: "png32",
+      transparent: "true",
+      f: "image"
     });
+    return `${baseUrl}?${params.toString()}`;
+  }
 
-    async function fetchWeather(zip) {
-      errorDiv.textContent = "";
-      try {
-        const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${zip}&days=7&aqi=no&alerts=no`);
-        if (!res.ok) throw new Error("Invalid ZIP or API error");
-        const data = await res.json();
-        updateCurrent(data);
-        updateForecast(data.forecast.forecastday);
-        setTimeOfDay(data.location.localtime);
-      } catch (err) {
-        errorDiv.textContent = err.message;
-      }
+  // Fetch weather data for city
+  async function fetchWeather(city) {
+    errorMsg.style.display = 'none';
+    try {
+      const resp = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${encodeURIComponent(city)}&days=10&aqi=no&alerts=no&hour=24`);
+      if (!resp.ok) throw new Error('City not found or API error');
+      const data = await resp.json();
+      return data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // Update UI with weather data
+  function updateDashboard(data) {
+    // Location
+    const loc = data.location;
+    locationHeader.textContent = `Here's your weather for ${loc.name}, ${loc.region || loc.country}`;
+
+    // Background gradient by local hour
+    const localHour = new Date(loc.localtime).getHours();
+    setBackgroundByTime(localHour);
+
+    // Current weather
+    const cur = data.current;
+    currentIcon.src = "https:" + cur.condition.icon;
+    currentIcon.alt = cur.condition.text;
+    tempSpan.textContent = `${cur.temp_f.toFixed(0)}°F / ${cur.temp_c.toFixed(0)}°C`;
+    conditionSpan.textContent = cur.condition.text;
+    feelsLikeSpan.textContent = `${cur.feelslike_f.toFixed(0)}°F / ${cur.feelslike_c.toFixed(0)}°C`;
+    windSpan.textContent = `${cur.wind_mph.toFixed(1)} mph ${cur.wind_dir}`;
+    humiditySpan.textContent = `${cur.humidity}%`;
+
+    // Radar static image
+    radarImage.src = getRadarSnapshotUrl(loc.lat, loc.lon);
+    radarImage.alt = `Radar snapshot near ${loc.name}`;
+
+    // Hourly forecast next 24 hours
+    hourlyForecast.innerHTML = "";
+    const todayHours = data.forecast.forecastday[0].hour;
+    for(let i=0; i < 24; i++) {
+      const hr = todayHours[i];
+      const card = document.createElement('div');
+      card.className = 'hourly-card';
+      card.innerHTML = `
+        <div class="hourly-time">${formatHour(new Date(hr.time).getHours())}</div>
+        <img src="https:${hr.condition.icon}" alt="${hr.condition.text}" />
+        <div>${hr.temp_f.toFixed(0)}°F</div>
+      `;
+      hourlyForecast.appendChild(card);
     }
 
-    function updateCurrent(data) {
-      document.getElementById("currentIcon").src = "https:" + data.current.condition.icon;
-      document.getElementById("currentTemp").textContent = Math.round(data.current.temp_f) + "°F";
-      document.getElementById("currentCondition").textContent = data.current.condition.text;
-      document.getElementById("feelsLike").textContent = Math.round(data.current.feelslike_f) + "°F";
-      document.getElementById("wind").textContent = data.current.wind_mph + " mph";
-      document.getElementById("humidity").textContent = data.current.humidity + "%";
+    // 10-day forecast
+    dailyForecast.innerHTML = "";
+    for (const day of data.forecast.forecastday) {
+      const card = document.createElement('div');
+      card.className = 'daily-card';
+      card.innerHTML = `
+        <div class="daily-day">${formatWeekday(day.date)}</div>
+        <img src="https:${day.day.condition.icon}" alt="${day.day.condition.text}" />
+        <div class="temp-high">${day.day.maxtemp_f.toFixed(0)}°F</div>
+        <div class="temp-low">${day.day.mintemp_f.toFixed(0)}°F</div>
+      `;
+      dailyForecast.appendChild(card);
     }
+  }
 
-    function updateForecast(days) {
-      const forecastDiv = document.getElementById("forecast");
-      forecastDiv.innerHTML = "";
-      days.forEach(day => {
-        const card = document.createElement("div");
-        card.className = "day-card";
-        card.innerHTML = `
-          <div class="day-name">${new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
-          <img src="https:${day.day.condition.icon}" alt="${day.day.condition.text}" />
-          <div class="day-temp">${Math.round(day.day.mintemp_f)}° / ${Math.round(day.day.maxtemp_f)}°</div>
-        `;
-        forecastDiv.appendChild(card);
-      });
+  // Handle submit click or enter key
+  async function handleSubmit() {
+    const city = cityInput.value.trim();
+    if (!city) {
+      errorMsg.textContent = "Please enter a city name.";
+      errorMsg.style.display = 'block';
+      return;
     }
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Loading...";
+    try {
+      const weatherData = await fetchWeather(city);
+      // Hide greeting, show dashboard with fade
+      greetingContainer.style.opacity = '1';
+      greetingContainer.style.transition = 'opacity 0.5s ease';
+      greetingContainer.style.opacity = '0';
+      setTimeout(() => {
+        greetingContainer.style.display = 'none';
+        dashboard.style.display = 'flex';
+        dashboard.classList.add('fade-in');
+        updateDashboard(weatherData);
+      }, 600);
+    } catch (e) {
+      errorMsg.textContent = "Error fetching weather data. Try another city.";
+      errorMsg.style.display = 'block';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Get Weather";
+    }
+  }
 
-    function setTimeOfDay(localTime) {
-      const hour = parseInt(localTime.split(" ")[1].split(":")[0]);
-      let timeClass = "day";
-      if (hour >= 20 || hour < 5) timeClass = "night";
-      else if (hour >= 5 && hour < 8) timeClass = "sunrise";
-      else if (hour >= 18 && hour < 20) timeClass = "sunset";
-      document.body.className = timeClass;
-    }
-  </script>
+  submitBtn.addEventListener('click', handleSubmit);
+  cityInput.addEventListener('keydown', e => {
+    if(e.key === 'Enter') handleSubmit();
+  });
+</script>
 </body>
 </html>
